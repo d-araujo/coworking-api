@@ -1,0 +1,69 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// 1. Enum para controlar o perfil de acesso do usuário
+enum Role {
+  USER
+  ADMIN
+}
+
+// 2. Tabela de Usuários
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relacionamento: Um usuário pode ter várias reservas
+  reservations Reservation[]
+
+  @@map("users")
+}
+
+// 3. Tabela de Salas
+model Room {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  capacity    Int
+  isActive    Boolean  @default(true) // Usado para ativar/desativar manutenção
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relacionamento: Uma sala pode ter várias reservas
+  reservations Reservation[]
+
+  @@map("rooms")
+}
+
+// 4. Tabela de Reservas (A tabela que conecta User e Room)
+model Reservation {
+  id        String   @id @default(uuid())
+  startTime DateTime
+  endTime   DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Chave Estrangeira para Usuário
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Chave Estrangeira para Sala
+  roomId String
+  room   Room   @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@map("reservations")
+}
