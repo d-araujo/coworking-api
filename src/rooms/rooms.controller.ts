@@ -7,6 +7,7 @@ import {
   Param,
   Put,
   Patch,
+  Delete,
 } from '@nestjs/common';
 import { RoomsService } from './rooms.service';
 import { CreateRoomDto } from './dto/create-room.dto';
@@ -58,5 +59,12 @@ export class RoomsController {
     @Body() updateRoomStatusDto: UpdateRoomStatusDto,
   ) {
     return this.roomsService.updateRoomStatus(id, updateRoomStatusDto);
+  }
+
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('ADMIN')
+  @Delete(':id')
+  async deleteRoom(@Param('id') id: string) {
+    return this.roomsService.deleteRoom(id);
   }
 }

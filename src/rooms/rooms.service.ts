@@ -78,4 +78,26 @@ export class RoomsService {
       throw error;
     }
   }
+
+  async deleteRoom(roomId: string) {
+    try {
+      const deleteRoom = await this.prisma.room.delete({
+        where: {
+          id: roomId,
+        },
+      });
+      return deleteRoom;
+    } catch (error) {
+      // Verifica se o erro é do Prisma e se o código é o P2025 (Registro não encontrado)
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2025'
+      ) {
+        throw new NotFoundException('Sala não encontrada para deleção.');
+      }
+
+      // Se for qualquer outro erro bizarro, lança ele normalmente
+      throw error;
+    }
+  }
 }
