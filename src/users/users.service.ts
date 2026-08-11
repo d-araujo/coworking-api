@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
+  BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -59,6 +60,33 @@ export class UsersService {
           'Este e-mail já está sendo utilizado por outra conta.',
         );
       }
+      throw error;
+    }
+  }
+
+  async deleteUser(userId: string, currentUserId: string) {
+    if (userId === currentUserId) {
+      throw new BadRequestException(
+        'Você não pode deletar a sua própria conta.',
+      );
+    }
+    try {
+      const deleteUser = await this.prisma.user.delete({
+        where: {
+          id: userId,
+        },
+      });
+      return deleteUser;
+    } catch (error) {
+      // Verifica se o erro é do Prisma e se o código é o P2025 (Registro não encontrado)
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2025'
+      ) {
+        throw new NotFoundException('User não encontrado para deleção.');
+      }
+
+      // Se for qualquer outro erro bizarro, lança ele normalmente
       throw error;
     }
   }
