@@ -6,6 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { RoomsModule } from './rooms/rooms.module';
 import { ReservationsModule } from './reservations/reservations.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { ReservationsModule } from './reservations/reservations.module';
     UsersModule,
     RoomsModule,
     ReservationsModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],
