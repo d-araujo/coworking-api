@@ -8,6 +8,7 @@ import {
   Put,
   Patch,
   Delete,
+  Req,
 } from '@nestjs/common';
 import { RoomsService } from './rooms.service';
 import { CreateRoomDto } from './dto/create-room.dto';
@@ -28,10 +29,12 @@ export class RoomsController {
   create(@Body() createRoomDto: CreateRoomDto) {
     return this.roomsService.create(createRoomDto);
   }
+
   @UseGuards(AuthGuard)
   @Get()
-  findAll() {
-    return this.roomsService.findAll();
+  findAll(@Req() req: { user: { role: string } }) {
+    const userRole = req.user.role;
+    return this.roomsService.findAll(userRole);
   }
 
   // 🔎 Buscar UMA sala específica por ID (Usuários autenticados)

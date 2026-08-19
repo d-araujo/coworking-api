@@ -17,8 +17,18 @@ export class RoomsService {
     return room;
   }
   // 2. Rota GET (Busca todas as salas cadastradas)
-  async findAll() {
-    return this.prisma.room.findMany();
+  async findAll(userRole: string) {
+    // 1. Se o usuário for ADMINISTRADOR, retorna absolutamente todas as salas
+    if (userRole === 'ADMIN') {
+      return this.prisma.room.findMany();
+    }
+
+    // 2. Caso contrário (usuário comum), retorna apenas as salas disponíveis
+    return this.prisma.room.findMany({
+      where: {
+        isActive: true,
+      },
+    });
   }
 
   // Buscar por ID
