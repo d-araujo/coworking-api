@@ -10,6 +10,8 @@ import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { AuthGuard } from './guards/auth.guard'; // <-- Importamos o nosso segurança
+import { ForgotPasswordDto } from './dto/forgot-password.dto'; // 👈 Importamos o DTO
+import { ResetPasswordDto } from './dto/reset-password.dto'; // 👈 Importamos o DTO
 
 @Controller('auth')
 export class AuthController {
@@ -31,5 +33,15 @@ export class AuthController {
   getProfile(@Request() req: { user: { sub: string; email: string } }) {
     // Retornamos aquele payload que o Guard pendurou na requisição no passo anterior
     return req.user;
+  }
+
+  @Post('forgot-password')
+  async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(forgotPasswordDto);
+  }
+
+  @Post('reset-password')
+  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+    return this.authService.resetPassword(resetPasswordDto);
   }
 }
