@@ -24,6 +24,8 @@ model User {
   email     String   @unique
   password  String
   role      Role     @default(USER)
+  resetPasswordToken   String?   // 👈 Campo para salvar o código de 6 dígitos
+  resetPasswordExpires DateTime? // 👈 Campo para salvar a validade do código
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
