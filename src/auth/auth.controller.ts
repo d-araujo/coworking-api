@@ -5,6 +5,8 @@ import {
   Get,
   UseGuards,
   Request,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
@@ -27,6 +29,16 @@ export class AuthController {
   @Post('login')
   async loginUser(@Body() body: LoginDto) {
     return this.authService.login(body);
+  }
+
+  @Post('logout')
+  @HttpCode(HttpStatus.OK) // Retorna 200 OK em vez do 201 padrão do POST
+  @UseGuards(AuthGuard) // 👈 Adicione o seu Guard de autenticação aqui, se quiser exigir que a pessoa esteja logada para deslogar
+  logout() {
+    return {
+      message:
+        'Logout realizado com sucesso. O token deve ser removido pelo cliente.',
+    };
   }
 
   // 👇 NOVA ROTA PROTEGIDA COM O MIDDLEWARE
