@@ -11,7 +11,10 @@ import {
 import { ReservationsService } from './reservations.service';
 import { CreateReservationDto } from './dto/create-reservation.dto';
 import { AuthGuard } from '../auth/guards/auth.guard';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Reservas') // (Opcional) Agrupa as rotas bonitinho no Swagger
+@ApiBearerAuth() // 👈 Exibe o ícone de cadeado para este Controller no Swagger
 @Controller('reservations')
 export class ReservationsController {
   constructor(private readonly reservationsService: ReservationsService) {}

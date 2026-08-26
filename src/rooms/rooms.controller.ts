@@ -17,7 +17,10 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UpdateRoomDto } from './dto/update-room.dto';
 import { UpdateRoomStatusDto } from './dto/update-room-status.dto';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Salas')
+@ApiBearerAuth() // 👈 Exibe o ícone de cadeado para este Controller no Swagger
 @Controller('rooms')
 export class RoomsController {
   constructor(private readonly roomsService: RoomsService) {}
@@ -26,13 +29,13 @@ export class RoomsController {
   @UseGuards(AuthGuard, RolesGuard)
   @Roles('ADMIN')
   @Post()
-  create(@Body() createRoomDto: CreateRoomDto) {
+  async create(@Body() createRoomDto: CreateRoomDto) {
     return this.roomsService.create(createRoomDto);
   }
 
   @UseGuards(AuthGuard)
   @Get()
-  findAll(@Req() req: { user: { role: string } }) {
+  async findAll(@Req() req: { user: { role: string } }) {
     const userRole = req.user.role;
     return this.roomsService.findAll(userRole);
   }
@@ -40,7 +43,7 @@ export class RoomsController {
   // 🔎 Buscar UMA sala específica por ID (Usuários autenticados)
   @UseGuards(AuthGuard)
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  async findOne(@Param('id') id: string) {
     return this.roomsService.findOne(id);
   }
 

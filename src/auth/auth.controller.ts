@@ -12,7 +12,9 @@ import { LoginDto } from './dto/login.dto';
 import { AuthGuard } from './guards/auth.guard'; // <-- Importamos o nosso segurança
 import { ForgotPasswordDto } from './dto/forgot-password.dto'; // 👈 Importamos o DTO
 import { ResetPasswordDto } from './dto/reset-password.dto'; // 👈 Importamos o DTO
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Auth') // (Opcional) Agrupa as rotas bonitinho no Swagger
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -30,6 +32,7 @@ export class AuthController {
   // 👇 NOVA ROTA PROTEGIDA COM O MIDDLEWARE
   @UseGuards(AuthGuard) // <-- É assim que botamos o segurança na porta!
   @Get('profile')
+  @ApiBearerAuth() // 👈 Exibe o ícone de cadeado para este Controller no Swagger
   getProfile(@Request() req: { user: { sub: string; email: string } }) {
     // Retornamos aquele payload que o Guard pendurou na requisição no passo anterior
     return req.user;

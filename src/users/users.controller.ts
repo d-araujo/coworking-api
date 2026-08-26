@@ -14,7 +14,10 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator'; // Puxando o Segurança
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Users') // (Opcional) Agrupa as rotas bonitinho no Swagger
+@ApiBearerAuth() // 👈 Exibe o ícone de cadeado para este Controller no Swagger
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}

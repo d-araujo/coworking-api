@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common'; // <-- Importar
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'; // 👈 Importação nova
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -13,6 +14,17 @@ async function bootstrap() {
       transform: true, // Converte os tipos de dados automaticamente (ex: string de URL para número)
     }),
   );
+
+  // 📖 Configuração do Swagger
+  const config = new DocumentBuilder()
+    .setTitle('Coworking API')
+    .setDescription('API REST para gestão de espaço de coworking.')
+    .setVersion('1.0')
+    .addBearerAuth() // 👈 Adiciona o botão para inserir o token JWT na documentação
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, document); // 👈 Define que a doc ficará na rota /api
 
   await app.listen(process.env.PORT ?? 3000);
 }
