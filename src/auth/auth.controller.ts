@@ -34,6 +34,7 @@ export class AuthController {
   @Post('logout')
   @HttpCode(HttpStatus.OK) // Retorna 200 OK em vez do 201 padrão do POST
   @UseGuards(AuthGuard) // 👈 Adicione o seu Guard de autenticação aqui, se quiser exigir que a pessoa esteja logada para deslogar
+  @ApiBearerAuth()
   logout() {
     return {
       message:
