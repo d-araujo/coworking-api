@@ -2,7 +2,7 @@ import {
   Controller,
   Post,
   Body,
-  Req,
+  Request,
   UseGuards,
   Get,
   Param,
@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { ReservationsService } from './reservations.service';
 import { CreateReservationDto } from './dto/create-reservation.dto';
-import { AuthGuard } from '../auth/guards/auth.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Reservas') // (Opcional) Agrupa as rotas bonitinho no Swagger
@@ -19,47 +19,51 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 export class ReservationsController {
   constructor(private readonly reservationsService: ReservationsService) {}
 
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Post()
   async create(
-    @Req() req: { user: { sub: string } },
+    @Request() req: { user: { id: string; email: string; role: string } },
     @Body() createReservationDto: CreateReservationDto,
   ) {
-    const userId = req.user.sub;
+    const userId = req.user.id;
     return this.reservationsService.create(userId, createReservationDto);
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get()
-  async getReservations(@Req() req: { user: { sub: string } }) {
-    const userId = req.user.sub;
+  async getReservations(
+    @Request() req: { user: { id: string; email: string; role: string } },
+  ) {
+    const userId = req.user.id;
     return this.reservationsService.getUserReservations(userId);
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get('history') // 👈 IMPORTANTE: Deve ficar antes do @Get(':id')
-  async getHistory(@Req() req: { user: { sub: string } }) {
-    const userId = req.user.sub;
+  async getHistory(
+    @Request() req: { user: { id: string; email: string; role: string } },
+  ) {
+    const userId = req.user.id;
     return this.reservationsService.getUserHistory(userId);
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   async getReservationById(
     @Param('id') id: string,
-    @Req() req: { user: { sub: string } }, // 👈 Pegamos o usuário logado
+    @Request() req: { user: { id: string; email: string; role: string } }, // 👈 Pegamos o usuário logado
   ) {
-    const userId = req.user.sub;
+    const userId = req.user.id;
     return this.reservationsService.getReservationById(id, userId);
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   async deleteReservationById(
     @Param('id') id: string,
-    @Req() req: { user: { sub: string } }, // 👈 Pegamos o usuário logado
+    @Request() req: { user: { id: string; email: string; role: string } }, // 👈 Pegamos o usuário logado
   ) {
-    const userId = req.user.sub;
+    const userId = req.user.id;
     return this.reservationsService.deleteReservationById(id, userId);
   }
 }
