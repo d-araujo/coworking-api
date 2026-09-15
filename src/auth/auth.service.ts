@@ -7,7 +7,6 @@ import { PrismaService } from '../prisma/prisma.service';
 import { RegisterDto } from './dto/register.dto';
 import * as bcrypt from 'bcrypt'; // <-- 1. Importamos o bcrypt
 import * as nodemailer from 'nodemailer'; // 👈 Adicione no topo do arquivo
-import { LoginDto } from './dto/login.dto'; // <-- Importamos o DTO
 import { JwtService } from '@nestjs/jwt'; // <-- Importamos o serviço de JWT
 import { ForgotPasswordDto } from './dto/forgot-password.dto'; // 👈 Importamos o DTO
 import { ResetPasswordDto } from './dto/reset-password.dto'; // 👈 Importamos o DTO
@@ -37,25 +36,30 @@ export class AuthService {
     };
   }
 
-  async login(data: LoginDto) {
-    // 1. Procuramos o usuário na despensa (Banco de Dados) pelo e-mail
+  async validateUser(email: string, pass: string) {
     const user = await this.prisma.user.findUnique({
-      where: { email: data.email },
+      where: { email: email },
     });
 
-    // 2. Se o usuário não existir, barramos a porta (Erro 401)
     if (!user) {
       throw new UnauthorizedException('E-mail ou senha inválidos');
     }
 
-    // 3. Comparamos a senha digitada com a senha embaralhada do banco
-    const isPasswordValid = await bcrypt.compare(data.password, user.password);
+    // 2. Compare usando a variável 'pass'
+    const isPasswordValid = await bcrypt.compare(pass, user.password);
 
     if (!isPasswordValid) {
       throw new UnauthorizedException('E-mail ou senha inválidos');
     }
 
-    // 4. Se chegou até aqui, o usuário provou quem é! Vamos montar o crachá (Payload)
+    // 3. Isole APENAS a senha. Deixe o 'id' ir para o result!
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...result } = user;
+
+    return result;
+  }
+
+  async login(user: { id: string; email: string; role: string }) {
     // Usamos 'sub' (subject) porque é o padrão oficial do JWT para guardar IDs
     const payload = {
       sub: user.id,
