@@ -10,6 +10,7 @@ import * as nodemailer from 'nodemailer'; // 👈 Adicione no topo do arquivo
 import { JwtService } from '@nestjs/jwt'; // <-- Importamos o serviço de JWT
 import { ForgotPasswordDto } from './dto/forgot-password.dto'; // 👈 Importamos o DTO
 import { ResetPasswordDto } from './dto/reset-password.dto'; // 👈 Importamos o DTO
+import * as crypto from 'crypto';
 
 @Injectable()
 export class AuthService {
@@ -60,21 +61,74 @@ export class AuthService {
   }
 
   async login(user: { id: string; email: string; role: string }) {
-    // Usamos 'sub' (subject) porque é o padrão oficial do JWT para guardar IDs
+    // 1. GERAÇÃO DO ACCESS TOKEN (Continua igual)
     const payload = {
       sub: user.id,
       email: user.email,
-      role: user.role, // <-- Adicionamos o cargo aqui!
+      role: user.role,
     };
+    const accessToken = await this.jwtService.signAsync(payload);
 
-    // 5. Assinamos o crachá
-    const token = await this.jwtService.signAsync(payload);
+    // 2. GERAÇÃO DO REFRESH TOKEN (String opaca segura)
+    // Cria uma string aleatória de 64 caracteres hexadecimais
+    const refreshToken = crypto.randomBytes(32).toString('hex');
 
-    // 6. Entregamos o crachá para o usuário
+    // 3. CÁLCULO DE EXPIRAÇÃO
+    // Define que esse Refresh Token vai durar 7 dias
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7);
+
+    // 4. SALVAR NO BANCO DE DADOS
+    // Registramos essa nova "sessão" atrelada ao usuário
+    await this.prisma.refreshToken.create({
+      data: {
+        token: refreshToken,
+        userId: user.id,
+        expiresAt: expiresAt,
+      },
+    });
+
+    // 5. RETORNO PARA O FRONTEND
     return {
       message: 'Login realizado com sucesso!',
-      access_token: token,
+      access_token: accessToken,
+      refresh_token: refreshToken, // 👈 Agora entregamos as duas chaves!
     };
+  }
+  async refreshTokens(refreshToken: string) {
+    // 1. Busca o token no banco junto com os dados do usuário
+    const tokenRecord = await this.prisma.refreshToken.findUnique({
+      where: { token: refreshToken },
+      include: { user: true },
+    });
+
+    // 2. Se o token não existir ou a data atual for maior que a expiração, nega o acesso
+    if (!tokenRecord || tokenRecord.expiresAt < new Date()) {
+      throw new UnauthorizedException('Refresh token inválido ou expirado');
+    }
+
+    // 3. Monta o payload padronizado usando os dados do usuário encontrado
+    const payload = {
+      sub: tokenRecord.user.id,
+      email: tokenRecord.user.email,
+      role: tokenRecord.user.role,
+    };
+
+    // 4. Gera um novo Access Token
+    const newAccessToken = await this.jwtService.signAsync(payload);
+
+    return {
+      access_token: newAccessToken,
+    };
+  }
+
+  async logout(refreshToken: string) {
+    // Usamos deleteMany para não estourar erro caso o token já tenha sido removido
+    await this.prisma.refreshToken.deleteMany({
+      where: { token: refreshToken },
+    });
+
+    return { message: 'Logout realizado com sucesso!' };
   }
 
   private async sendEmail(to: string, code: string) {

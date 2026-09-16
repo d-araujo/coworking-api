@@ -5,8 +5,7 @@ import {
   Get,
   UseGuards,
   Request,
-  HttpCode,
-  HttpStatus,
+  BadRequestException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
@@ -16,6 +15,7 @@ import { ResetPasswordDto } from './dto/reset-password.dto'; // 👈 Importamos 
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 
 @ApiTags('Auth') // (Opcional) Agrupa as rotas bonitinho no Swagger
 @Controller('auth')
@@ -37,15 +37,21 @@ export class AuthController {
     return this.authService.login(req.user);
   }
 
-  @Post('logout')
-  @HttpCode(HttpStatus.OK) // Retorna 200 OK em vez do 201 padrão do POST
-  @UseGuards(JwtAuthGuard) // 👈 Adicione o seu Guard de autenticação aqui, se quiser exigir que a pessoa esteja logada para deslogar
+  @Post('refresh')
+  async refresh(@Body() dto: RefreshTokenDto) {
+    if (!dto.refreshToken) {
+      throw new BadRequestException('O campo refreshToken é obrigatório');
+    }
+    return this.authService.refreshTokens(dto.refreshToken);
+  }
   @ApiBearerAuth()
-  logout() {
-    return {
-      message:
-        'Logout realizado com sucesso. O token deve ser removido pelo cliente.',
-    };
+  @UseGuards(JwtAuthGuard)
+  @Post('logout')
+  async logout(@Body() dto: RefreshTokenDto) {
+    if (!dto.refreshToken) {
+      throw new BadRequestException('O campo refreshToken é obrigatório');
+    }
+    return this.authService.logout(dto.refreshToken);
   }
 
   // 👇 NOVA ROTA PROTEGIDA COM O MIDDLEWARE
