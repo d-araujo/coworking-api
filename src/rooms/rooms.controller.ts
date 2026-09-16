@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { RoomsService } from './rooms.service';
 import { CreateRoomDto } from './dto/create-room.dto';
-import { AuthGuard } from '../auth/guards/auth.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UpdateRoomDto } from './dto/update-room.dto';
@@ -26,14 +26,14 @@ export class RoomsController {
   constructor(private readonly roomsService: RoomsService) {}
 
   // 🛡️ ROTA PROTEGIDA: Apenas Administradores podem criar salas
-  @UseGuards(AuthGuard, RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
   @Post()
   async create(@Body() createRoomDto: CreateRoomDto) {
     return this.roomsService.create(createRoomDto);
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get()
   async findAll(@Req() req: { user: { role: string } }) {
     const userRole = req.user.role;
@@ -41,13 +41,13 @@ export class RoomsController {
   }
 
   // 🔎 Buscar UMA sala específica por ID (Usuários autenticados)
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   async findOne(@Param('id') id: string) {
     return this.roomsService.findOne(id);
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
   @Put(':id')
   async updateRoom(
@@ -57,7 +57,7 @@ export class RoomsController {
     return this.roomsService.updateRoom(id, updateRoomDto);
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
   @Patch(':id/status')
   async updateRoomStatus(
@@ -67,7 +67,7 @@ export class RoomsController {
     return this.roomsService.updateRoomStatus(id, updateRoomStatusDto);
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
   @Delete(':id')
   async deleteRoom(@Param('id') id: string) {
