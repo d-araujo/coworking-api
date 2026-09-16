@@ -31,6 +31,7 @@ model User {
 
   // Relacionamento: Um usuário pode ter várias reservas
   reservations Reservation[]
+  refreshTokens RefreshToken[]
 
   @@map("users")
 }
@@ -68,4 +69,16 @@ model Reservation {
   room   Room   @relation(fields: [roomId], references: [id], onDelete: Cascade)
 
   @@map("reservations")
+}
+
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@map("refresh_tokens")
 }
