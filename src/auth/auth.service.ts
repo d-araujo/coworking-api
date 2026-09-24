@@ -2,6 +2,7 @@ import {
   Injectable,
   UnauthorizedException,
   BadRequestException,
+  ConflictException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { RegisterDto } from './dto/register.dto';
@@ -20,6 +21,13 @@ export class AuthService {
   ) {}
 
   async register(data: RegisterDto) {
+    const emailAlreadyUsed = await this.prisma.user.findUnique({
+      where: { email: data.email },
+    });
+
+    if (emailAlreadyUsed) {
+      throw new ConflictException('E-mail já cadastrado');
+    }
     // 2. O Chef pega a senha original e tempera (criptografa) com 10 "voltas" de complexidade
     const hashedPassword = await bcrypt.hash(data.password, 10);
 
@@ -28,6 +36,11 @@ export class AuthService {
         name: data.name,
         email: data.email,
         password: hashedPassword, // <-- 3. Salvamos a senha embaralhada!
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
       },
     });
 
