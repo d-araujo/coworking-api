@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtModule } from '@nestjs/jwt'; // <-- 1. Importar o módulo JWT
-import { PrismaService } from '../prisma/prisma.service'; // (Mantenha o que você já tinha)
 import { LocalStrategy } from './strategies/local.strategy';
 import { PassportModule } from '@nestjs/passport';
 import { LocalAuthGuard } from './guards/local-auth.guard';
@@ -23,7 +22,6 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
   controllers: [AuthController],
   providers: [
     AuthService,
-    PrismaService,
     LocalStrategy,
     LocalAuthGuard,
     JwtStrategy,
