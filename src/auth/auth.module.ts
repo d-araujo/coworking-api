@@ -15,7 +15,7 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
     // 2. Configurando a máquina de crachás
     JwtModule.register({
       global: true, // Facilita para usarmos o crachá em outros lugares depois
-      secret: process.env.JWT_SECRET || 'minha_chave_secreta_super_segura', // A "assinatura" do servidor
+      secret: process.env.JWT_SECRET, // A "assinatura" do servidor
       signOptions: { expiresIn: '15m' }, // O crachá expira em 1 hora
     }),
   ],
