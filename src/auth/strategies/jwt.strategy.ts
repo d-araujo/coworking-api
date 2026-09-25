@@ -12,10 +12,14 @@ export type JwtPayload = {
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor() {
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+      throw new Error('JWT_SECRET is not defined in environment variables');
+    }
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false, // Bloqueia tokens expirados automaticamente (Erro 401)
-      secretOrKey: process.env.JWT_SECRET || 'minha_chave_secreta_super_segura',
+      secretOrKey: secret,
     });
   }
 
