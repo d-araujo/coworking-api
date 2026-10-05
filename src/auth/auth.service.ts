@@ -189,7 +189,10 @@ export class AuthService {
     }
 
     // 2. Gera um código de 6 dígitos aleatório
-    const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const resetCode = crypto
+      .randomInt(0, 1_000_000)
+      .toString()
+      .padStart(6, '0');
 
     // 3. Calcula a validade de 15 minutos a partir de agora
     const expiresAt = new Date();
@@ -214,7 +217,9 @@ export class AuthService {
     const { email, code, newPassword } = resetPasswordDto;
 
     // 1. Busca o usuário
-    const user = await this.prisma.user.findUnique({ where: { email } });
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+    });
 
     // 2. Verifica se o usuário existe, se o código bate e se não expirou
     // Usamos a mesma mensagem genérica para não dar pistas a invasores
@@ -228,18 +233,23 @@ export class AuthService {
         'Código de verificação inválido ou expirado.',
       );
     }
-
     // 3. Criptografa a nova senha
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     // 4. Atualiza a senha no banco e LIMPA os campos de recuperação
-    await this.prisma.user.update({
-      where: { id: user.id },
-      data: {
-        password: hashedPassword,
-        resetPasswordToken: null,
-        resetPasswordExpires: null,
-      },
+    await this.prisma.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id: user.id },
+        data: {
+          password: hashedPassword,
+          resetPasswordToken: null,
+          resetPasswordExpires: null,
+        },
+      });
+
+      await tx.refreshToken.deleteMany({
+        where: { userId: user.id },
+      });
     });
 
     return {
