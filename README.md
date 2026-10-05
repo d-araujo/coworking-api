@@ -6,6 +6,8 @@ API de um sistema de gestão de salas de coworking, desenvolvida como projeto pe
 ## Deploy
 Swagger da API rodando no ar e testável: https://coworking-api-seti.onrender.com/api
 
+> A primeira requisição pode levar cerca de 1 minuto: no plano gratuito do Render, a API "dorme" quando fica um tempo sem uso.
+
 ## Stack
 - NestJS
 - TypeScript
@@ -16,14 +18,14 @@ Swagger da API rodando no ar e testável: https://coworking-api-seti.onrender.co
 ## Como rodar localmente
 
 ### Pré-requisitos
-- Node.js
+- Node.js 20.19+, 22.12+ ou 24+ (versões exigidas pelo Prisma 7)
 - Um banco PostgreSQL (local ou em um container Docker)
 
 ### Passo a passo
 Clone o repositório e instale as dependências:
 ```bash
-git clone <url-do-repositorio>
-cd <pasta-do-projeto>
+git clone https://github.com/d-araujo/coworking-api.git
+cd coworking-api
 npm install
 ```
 
@@ -98,7 +100,7 @@ Armazena os refresh tokens emitidos pelo sistema.
 ## Módulos
 
 ### Auth
-Rotas de registro, login, esquecimento de senha e validação de usuário, com autenticação JWT.
+Rotas de registro, login, refresh do token, logout, esquecimento e redefinição de senha e validação de usuário, com autenticação JWT.
 
 **Por que um access token stateless?** O access token expira em apenas 15 minutos e, por ser stateless, não pode ser revogado depois de gerado. Considerei esse risco aceitável: em caso de invasão, revogar todos os refresh tokens (os tokens de longa duração) já corta o acesso, e uma janela de 15 minutos não conseguiria causar grande impacto na conta de um usuário.
 
@@ -111,9 +113,11 @@ CRUD de salas: criação, busca, atualização, ativação/desativação e remo�
 ### Reservation
 Um dos principais módulos da aplicação, responsável pelas regras de negócio das reservas.
 
-**Criação:** antes de criar uma reserva, a API faz duas verificações:
-- **Horário válido:** o `startTime` precisa ser anterior ao `endTime`.
-- **Conflito de horário:** a API busca, na mesma sala, alguma reserva que termine depois do início da nova reserva e comece antes do término dela. Se existir, os horários se sobrepõem e a criação é bloqueada.
+**Criação:** antes de criar uma reserva, a API verifica se:
+- a sala existe e está ativa;
+- o `startTime` é anterior ao `endTime`;
+- a reserva não está no passado;
+- não há conflito de horário: a API busca, na mesma sala, alguma reserva que termine depois do início da nova reserva e comece antes do término dela. Se existir, os horários se sobrepõem e a criação é bloqueada.
 
 **Cancelamento:**
 - O usuário comum só pode cancelar as próprias reservas, e com pelo menos 24h de antecedência do início.
