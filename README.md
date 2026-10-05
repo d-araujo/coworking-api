@@ -1,98 +1,124 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Coworking API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## Sobre o projeto
+API de um sistema de gestão de salas de coworking, desenvolvida como projeto pessoal. Conta com cadastro e autenticação de usuários (JWT com access e refresh token), controle de acesso por role (ADMIN e usuário comum), gestão de salas e reservas com regras de negócio, como bloqueio de horários conflitantes.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Deploy
+Swagger da API rodando no ar e testável: https://coworking-api-seti.onrender.com/api
 
-## Description
+## Stack
+- NestJS
+- TypeScript
+- Prisma
+- PostgreSQL (Neon)
+- Render
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Como rodar localmente
 
-## Project setup
+### Pré-requisitos
+- Node.js
+- Um banco PostgreSQL (local ou em um container Docker)
 
+### Passo a passo
+Clone o repositório e instale as dependências:
 ```bash
-$ npm install
+git clone <url-do-repositorio>
+cd <pasta-do-projeto>
+npm install
 ```
 
-## Compile and run the project
-
-```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+Crie um arquivo `.env` na raiz do projeto com as variáveis:
+```env
+DATABASE_URL=   # URL de conexão do seu banco PostgreSQL
+JWT_SECRET=     # chave secreta aleatória usada para assinar os tokens
+CORS_ORIGIN=    # endereço onde o seu frontend vai rodar
 ```
 
-## Run tests
-
+Rode as migrations para criar as tabelas no banco:
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npx prisma migrate dev
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
+Gere o Prisma Client, o código que a API usa para acessar o banco:
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+npx prisma generate
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+Suba a API em modo de desenvolvimento:
+```bash
+npm run start:dev
+```
 
-## Resources
+A API sobe em `http://localhost:3000` e o Swagger fica em `http://localhost:3000/api`.
 
-Check out a few resources that may come in handy when working with NestJS:
+Para rodar a versão de produção:
+```bash
+npm run build
+npm run start:prod
+```
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+## Banco de dados
 
-## Support
+### User
+Armazena os usuários cadastrados no sistema.
+- `id` (primary key)
+- `name`
+- `email` (unique)
+- `password`: salva em forma de hash, para proteger os dados em caso de vazamento do banco.
+- `role`: cargo do usuário. Algumas rotas são acessíveis apenas aos administradores do sistema, possivelmente os donos dos espaços de coworking.
+- `resetPasswordToken` e `resetPasswordExpires`: usados na redefinição de senha.
+- `createdAt` e `updatedAt`
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+### Room
+Armazena as salas cadastradas no sistema.
+- `id` (primary key)
+- `name`
+- `description`: detalhes da sala.
+- `capacity`
+- `isActive`: indica se a sala está ativa.
+- `createdAt` e `updatedAt`
 
-## Stay in touch
+### Reservation
+Armazena as reservas feitas no sistema. Cada reserva liga um usuário a uma sala, o que cria a relação many-to-many entre usuários e salas.
+- `id` (primary key)
+- `startTime`: início da reserva.
+- `endTime`: fim da reserva.
+- `userId`: usuário que fez a reserva.
+- `roomId`: sala reservada.
+- `createdAt` e `updatedAt`
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+### RefreshToken
+Armazena os refresh tokens emitidos pelo sistema.
+- `id` (primary key)
+- `token`
+- `userId`: usuário dono do token.
+- `expiresAt`
+- `createdAt`
 
-## License
+## Módulos
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+### Auth
+Rotas de registro, login, esquecimento de senha e validação de usuário, com autenticação JWT.
+
+**Por que um access token stateless?** O access token expira em apenas 15 minutos e, por ser stateless, não pode ser revogado depois de gerado. Considerei esse risco aceitável: em caso de invasão, revogar todos os refresh tokens (os tokens de longa duração) já corta o acesso, e uma janela de 15 minutos não conseguiria causar grande impacto na conta de um usuário.
+
+### Users
+Busca, atualização e remoção de usuários (o cadastro é feito pela rota de registro do módulo Auth). Usuários comuns só conseguem consultar e alterar os próprios dados. A remoção de um usuário é restrita a ADMIN, que não pode deletar a própria conta.
+
+### Rooms
+CRUD de salas: criação, busca, atualização, ativação/desativação e remoção. Criar, alterar e remover salas é restrito a ADMIN. Na listagem, o ADMIN vê todas as salas, enquanto usuários comuns veem apenas as ativas.
+
+### Reservation
+Um dos principais módulos da aplicação, responsável pelas regras de negócio das reservas.
+
+**Criação:** antes de criar uma reserva, a API faz duas verificações:
+- **Horário válido:** o `startTime` precisa ser anterior ao `endTime`.
+- **Conflito de horário:** a API busca, na mesma sala, alguma reserva que termine depois do início da nova reserva e comece antes do término dela. Se existir, os horários se sobrepõem e a criação é bloqueada.
+
+**Cancelamento:**
+- O usuário comum só pode cancelar as próprias reservas, e com pelo menos 24h de antecedência do início.
+- O ADMIN pode cancelar qualquer reserva, a qualquer momento.
+
+## Próximos passos
+- Frontend em HTML, CSS e JavaScript consumindo a API.
+- Testes reescritos e ampliados.
