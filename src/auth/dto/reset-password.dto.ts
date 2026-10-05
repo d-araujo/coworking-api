@@ -1,4 +1,10 @@
-import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsString,
+  Matches,
+  MinLength,
+} from 'class-validator';
 
 export class ResetPasswordDto {
   @IsEmail({}, { message: 'O formato do e-mail é inválido.' })
@@ -7,6 +13,9 @@ export class ResetPasswordDto {
 
   @IsString()
   @IsNotEmpty({ message: 'O código de verificação é obrigatório.' })
+  @Matches(/^\d{6}$/, {
+    message: 'O código de verificação deve ter exatamente 6 dígitos.',
+  })
   code!: string;
 
   @IsString()
